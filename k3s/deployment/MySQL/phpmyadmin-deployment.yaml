@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-phpmyadmin-ui
+  labels:
+    app: mysql-phpmyadmin-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-phpmyadmin-ui
+  template:
+    metadata:
+      labels:
+        app: mysql-phpmyadmin-ui
+    spec:
+      containers:
+        - name: mysql-phpmyadmin-ui
+          image: phpmyadmin/phpmyadmin
+          ports:
+            - containerPort: 80
+          env:
+            - name: PMA_HOST
+              value: mysqldb-service
+            - name: PMA_PORT
+              value: "3306"
+            - name: MYSQL_ROOT_PASSWORD
+              value: root_pass

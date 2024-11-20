@@ -1,0 +1,7 @@
+version: '3.5'
+services:
+  web-server:
+    image: trickstermaster/cloud-todo-list-django_web:18.0
+    container_name: test
+    ports:
+      - '9000:8000'

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: for-jenkins-test
+spec:
+  selector:
+    matchLabels:
+      app: for-jenkins-test-{{ .Release.Name }}
+  replicas: {{ .Values.container.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: for-jenkins-test-{{ .Release.Name }}
+    spec:
+      containers:
+        - name: nginx
+          image: {{ .Values.container.images }}
+          ports:
+            - containerPort: 80

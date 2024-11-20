@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: for-jenkins-test-service
+spec:
+  selector:
+    app: for-jenkins-test-{{ .Release.Name }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+  type: {{ .Values.service.type }}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service 
+metadata:
+  name: mysql-phpmyadmin-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mysql-phpmyadmin-ui
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

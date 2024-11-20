@@ -1,0 +1,7 @@
+- name: delete master node
+  hosts: master-node
+  become: yes
+
+  tasks:
+  - name: reboot master node
+    command: sh /usr/local/bin/k3s-uninstall.sh

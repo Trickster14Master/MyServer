@@ -1,0 +1,40 @@
+- name: Ping Server
+  hosts: all
+  become: yes
+
+  vars:
+    pakages:
+            - net-tools
+            - mc
+            - vim
+            - git
+            - bash-completion
+            - python3
+            - tar
+            - rsyslog
+    ports:
+          - 6443/tcp
+          - 51820/tcp
+          - 51821/tcp
+          - 10250/tcp
+          - 2379-2380/tcp
+          - 8472/udp
+
+  tasks:
+  - name: Packages
+    apt:
+      pkg: "{{pakages}}"
+      state: present
+
+  tasks:
+  - name: Open port
+    ansible.posix.firewalld:
+      port: "{{ports}}"
+      zone: public
+      permanent: yes
+      state: enabled
+      immediate: true
+  - name: Reload Fierwale
+    service:
+      name: firewalld
+      state: restarted

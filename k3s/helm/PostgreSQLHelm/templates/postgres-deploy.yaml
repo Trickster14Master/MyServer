@@ -1,0 +1,76 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.storagepostgres.pv_name }}
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/var/lib/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.storagepostgres.pvc_name }}
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  labels:
+    app: postgres
+spec:
+   ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+   type: {{ .Values.service.type }}
+   selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+   matchLabels:
+    app: postgres
+  replicas: {{ .Values.container.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.container.images }}
+          imagePullPolicy: "IfNotPresent"
+          env:
+           - name: POSTGRES_USER
+             value: {{ .Values.container.user }}
+           - name: POSTGRES_PASSWORD
+             value: {{ .Values.container.password }}
+           - name: POSTGRES_DB
+             value: {{ .Values.container.db_name }}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: {{ .Values.storagepostgres.pvc_name }}

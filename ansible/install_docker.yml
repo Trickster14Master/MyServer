@@ -1,0 +1,15 @@
+- name: Install Docker
+  hosts: jenkins
+  become: yes
+
+  tasks:
+  - name: update ubuntu
+    command: apt update
+
+  tasks:
+  - name: download docker sh
+    command: curl -fsSL https://get.docker.com/ -o get-docker.sh
+
+  tasks:
+  - name: launch sh
+    command: sh ./get-docker.sh

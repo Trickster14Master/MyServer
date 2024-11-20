@@ -1,0 +1,10 @@
+container:
+  images: trickstermaster/for-jenkins-test:latest
+  replicaCount: 1
+  port: 80
+  
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 80
+  

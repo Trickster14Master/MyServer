@@ -1,0 +1,14 @@
+- name: Ping Server
+  hosts: all
+  become: yes
+
+  vars:
+    pakages:
+            - apache2
+            - htop
+            - tree
+            - rsync
+
+  tasks:
+  - name: Task ping
+    ping:

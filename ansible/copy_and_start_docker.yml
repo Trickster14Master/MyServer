@@ -1,0 +1,22 @@
+- name: copy and start docker
+  hosts: test
+  become: yes
+  
+  vars:
+    dir: "for-jenkins-test"
+    file: "/home/main-serv/docker/cloud-todo-list-django/docker-compose.yml"
+
+  tasks:
+  - name: create dir
+    ansible.builtin.file:
+      path: /home/{{dir}}
+      state: directory
+      
+  - name: copy file
+    copy:
+      src: "{{file}}"
+      dest: /home/{{dir}}
+      mode: 0777
+      
+  - name: start
+    command: docker-compose -f /home/{{dir}}/docker-compose.yml up -d

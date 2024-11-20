@@ -1,0 +1,7 @@
+- name: Delete worker
+  hosts: worker-node
+  become: yes
+
+  tasks:
+  - name: delete node node
+    command: sh /usr/local/bin/k3s-agent-uninstall.sh

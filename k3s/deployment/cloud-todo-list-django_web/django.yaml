@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: django
+  labels:
+    app: django
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: LoadBalancer
+
+---
+
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: django-app-pv
+  labels:
+    type: local
+    app: django
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/static"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: django-app-pvc
+  labels:
+    app: django
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: django-app-pv
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django
+spec:
+  selector:
+    matchLabels:
+      app: django
+      tier: app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: django
+        tier: app
+    spec:
+      volumes:
+        - name: django
+          persistentVolumeClaim:
+            claimName: django-app-pvc
+      containers:
+        - name: django
+          image: trickstermaster/cloud-todo-list-django_web:18.0
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: django
+              mountPath: "/data/static"

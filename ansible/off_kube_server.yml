@@ -1,0 +1,7 @@
+- name: Delete worker
+  hosts: worker-node, master-node
+  become: yes
+
+  tasks:
+  - name: reboot cluster
+    command: poweroff

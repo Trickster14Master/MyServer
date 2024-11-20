@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+spec:
+  selector:
+   matchLabels:
+    app: pgadmin
+  replicas: {{ .Values.pgcontainer.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+        - name: pgadmin4
+          image: {{ .Values.pgcontainer.images }}
+          env:
+           - name: PGADMIN_DEFAULT_EMAIL
+             value: {{ .Values.pgcontainer.email }}
+           - name: PGADMIN_DEFAULT_PASSWORD
+             value: {{ .Values.pgcontainer.password }}
+           - name: PGADMIN_PORT
+             value: "80"
+          ports:
+            - containerPort: {{ .Values.pgcontainer.port }}
+              name: pgadminport
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin
+  labels:
+    app: pgadmin
+spec:
+  selector:
+   app: pgadmin
+  type: {{ .Values.pgservice.type }}
+  ports:
+    - port: {{ .Values.pgservice.port }}
+      targetPort: {{ .Values.pgservice.targetPort }}
+     

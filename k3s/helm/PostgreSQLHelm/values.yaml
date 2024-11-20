@@ -1,0 +1,30 @@
+container:
+  images: postgres:latest
+  replicaCount: 1
+  port: 5432
+  user: postgresadmin
+  password: admin123
+  db_name: postgresdb
+  
+pgcontainer:
+  images: dpage/pgadmin4
+  replicaCount: 1
+  port: 80
+  email: admin@admin.com
+  password: admin123
+ 
+storagepostgres:
+  pv_name: postgres-pv-volume
+  pv-volume: 5Gi
+  pvc_name: postgres-pv-claim
+  pvc-volume: 5Gi
+
+service:
+  type: LoadBalancer
+  port: 5432
+  targetPort: 5432
+  
+pgservice:
+  type: LoadBalancer
+  port: 80
+  targetPort: 80

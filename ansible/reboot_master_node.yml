@@ -1,0 +1,8 @@
+- name: Ping Server
+  hosts: master-node
+  become: yes
+
+  tasks:
+  - name: reboot master node
+    reboot:
+      reboot_timeout: 3600

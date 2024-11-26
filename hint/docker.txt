@@ -1,0 +1,59 @@
+docker images - выводит все образы докера 
+docker image rm - удалить образ 
+docker system prune -a --volumes - удалить все контейнеру и имиджем 
+docker ps - запущенные докеры сейчас 
+docker ps -a - запущенные докеры когда бы это не было
+docker build -t coffe . - создаём docker образ в текущей директории 
+docker container rm cof - удаление контейнера с именем cof
+docker inspect 11c4f8e68cf8 - получить всю информацию о контейнере 
+
+docker pull ubuntu - скачать докер 
+
+docker run --rm -d ubuntu - запускаем докер на основе имиджа ubuntu  в фоновом режиме, и делаем так что бы он удалился после остановки 
+docker run --name cof coffe - запускаем контейнер с именем cof с помощью образа coffe
+docker run --name cof -p 8000:8000 -d coffe - запускаем docker с проброской портов (первый порт указывается для браузера )
+docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag -  c помощью -e указываем переменные окружения, в данном случаи пароль. 
+docker run --name web -v /some/content:/usr/share/nginx/html:ro -d nginx - создаём докер с сохранением данных, -v что монтируем:куда монтируем в контейнере  (ro только читать)
+docker run --name web -v ngin:/usr/share/nginx/html:ro -d nginx - создаём докер с сохранением данных, -v именной вольюм автоматически создастся в   /var/lib/docker/volumes (ro только читать)
+
+docker exec -it web1 /bin/bash - попадаем в внутрь контейнера 
+
+docker network ls - вывод всех сетей 
+docker network create myNet01 - создание собственной сети 
+docker inspect myNet01 - вывести информацию о сети
+docker network create --driver bridge --subnet 192.168.0.0/24 --gateway 192.168.0.1 myNet192 - создание сети с определёнными значениями ip адресов 
+
+docker build -t mydockertest:vo1 . - создание имиджа из докер файла
+
+
+FROM ubuntu:22.04
+CMD echo "HELLO WORD TOU NOU" команда которая выполняется при старте, выводит сообщения, изменяется
+ENTRYPOINT ["echo"] выполняется при старте, выводит сообщения,не изменяется
+RUN apt-get update - операции выполняются внутри контейнера
+EXPOSE 80 - сразу прокидываем порт, но запускать надо с -P, и порт случайный 
+WORKDIR /var/www/html/ - показываем директорию в которой нужно загрузиться при открытии терминала докера docker exec -it web1 /bin/bash
+COPY fils/index.html var/www/html/ - перенос данных из системы в докер (c помощью . указываем что вне документы надо перенести в рабочую директорию)
+ENV OWNWR=RomNero - указываем переменные в контейнере 
+LABEL autor=serg информация которую можно передать в мета данные 
+
+
+
+
+version: '3.5'
+services:
+  web-server: - название сервиса
+    image: nginx:stable - на основе какого имиджа делать контейнер 
+    container_name: nginx_compose_test - имя контейнера
+    volumes: - перебрасывает файлы с системы в контейнер
+      - '/opt/web/html:/var/www/html'
+      - '/opt/web/pics:/var/www/pictures'
+    environment: - переменные указываемые при запуске
+      - 'NGINX_HOST=web.romnero.de'
+      - 'NGINX_PORT=80'
+    ports: - порт 
+      - '80:80'
+    restart: unless-stopped - что делать при перезагрузке 
+
+sudo docker-compose build - создаём браз docker-compose
+sudo docker-compose up - запускаем docker-compose1~ddddocker images - выводит все образы докера 
+

@@ -1,0 +1,46 @@
+helm 
+
+install 
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+команды 
+
+Создание helm репозитория = helm create demo-chart
+
+Структура файла диаграммы: https://helm.sh/docs/topics/charts/#the-chart-file-structure
+
+Предопределенные значения: https://helm.sh/docs/topics/charts/#predefined-values
+
+Установить приложение = helm install demo-app ./demo-chart(путь к репозиторию)
+
+Перечислите все доступные версии во всех пространствах имен = helm list --all-namespaces
+
+Статус конкретного релиза = helm status demo-app
+
+Отобразить историю релизов = helm history demo-app
+
+Имитировать обновление релиза с помощью debug = helm upgrade demo-app ./demo-chart --debug --dry-run
+
+Обновление версии = helm upgrade demo-app ./demo-chart --debug --wait
+
+Обновление переменной = helm upgrade demo-app ./demo-chart --set image.tag=1.212121
+
+Откат выпуска = helm rollback demo-app 1
+
+Обновление релиза с откатами в случае неудачного обновления = helm upgrade demo-app ./demo-chart --debug --atomic --timeout 20s --set image.tag=1.212121
+
+Установить приложение в пространство имен = helm upgrade --install demo-app-test ./demo-chart -f demo-chart/values-dev.yaml -n app --create-namespace --dry-run
+
+Удаление приложений = helm uninstall demo-app
+
+helm uninstall demo-app-test -n app
+
+Установить helm chart  = helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm repo update
+
+helm search repo prometheus-community/kube-prometheus-stack
+
+helm pull prometheus-community/kube-prometheus-stack

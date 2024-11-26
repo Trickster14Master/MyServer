@@ -1,0 +1,114 @@
+ansible --version = узнать версию и расположения конфигурационных файлов.
+ansible all -m ping - проверить что всё работает 
+ansible test -m ping - пинг к группе тест 
+ansible all -m setup - узнать всю инфу о хостах 
+ansible all -m command -a "uptime" - выполнить команду 
+ansible all -m file -a "path=/home/ansible_test.txt state=touch" -b создать какой то файл 
+ansible test -m copy -a "src=test_file.txt dest=/home mode=777" - отправить файл с сервера  
+ansible test -m debug -a "var=ansible_host" - получить доступ к переменным 
+
+
+hosts
+[test] - указываем группу 
+client2 ansible_host=192.168.0.183 ansible_ssh_private_key_file=/root/.ssh/client - c использование ssh ключа 
+client2 ansible_host=192.168.0.183 ansible_user=user ansible_password=root - указываем в хосте к какому узлу надо подключиться 
+
+[all_groups:children] - объединяем несколько групп в одну all_groups
+test1
+test2
+
+
+создание переменных 
+создаём папку group_vars внутри которой создаём файл с именем группы, внутрь которого засовываем все одинаковые переменные 
+группа test 
+ansible_host: 192.168.0.183
+ansible_user: root
+ansible_ssh_private_key_file: /root/.ssh/client
+
+playbook
+ansible-playbook ping.yml - запуск 
+- name: Ping Server -указываем имя
+  hosts: all
+  become: yes -запускаем от имени администратор 
+
+  vars: - пространство для переменных  
+    pakages: - переменная  
+            - apache2 - содержимое переменной 
+            - htop
+            - tree
+            - rsync
+
+  tasks: -перечисляем задачи 
+  - name: Task ping - имя задачи 
+    ping: - модуль 
+  - name: Install apache2
+    apt:
+      pkg: apache2 |  "{{pakages}}" - использование переменной 
+      state: present
+  - name: copy File
+    copy:
+      src: ./test.txt
+      dest: /home/
+      mode: 0777
+
+  # применение циклов 
+
+  - name: create group
+    group:
+      name: "{{item}}"
+      state: present
+    loop:
+      - dev
+      - test
+
+  - name: Create user
+    user:
+      name: "{{item.clientname}}"
+      shell: /bin/bash
+      groups: dev, test
+      append: yes
+      home: "/home/{{item.homedir}}"
+    with_items:
+       - {clientname: client1, homedir: client1}
+       - {clientname: client2, homedir: client2}
+
+  # дебаг, 
+  vars:
+    slov1: a
+    slov2: b
+
+  tasks:
+  - debug:
+      msg: "print is {{slov1}}" - вывод в консоль переменных 
+
+  - set_fact:
+       message: "comp {{slov1}} in {{slov2}}" - склейка 
+
+  - debug:
+      var: message - вывод склееных переменных 
+
+  - debug:
+      var: ansible_distribution_version - обращение к модулю хостов  
+
+  - shell: id client1 - обращение к клиенту для получения id группы 
+    register: client_group - присваиваем значение в переменную
+
+  - debug:
+      msg: "Client1 in {{client_group}}"
+
+
+  # условие 
+  - block: - объединение нескольких задач в одну 
+
+    - name: Install
+      apt:
+        pkg:
+          - tree
+        state: present
+
+    - name: Create Folder
+      file:
+        path: /home/test1488
+        state: directory
+
+    when: ansible_hostname == "client2" - выполняем условий везде где не client2

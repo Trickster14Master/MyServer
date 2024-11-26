@@ -1,0 +1,74 @@
+под
+	- контейнер\ы
+	- отщий том (место)
+	- ip 
+
+сервисы kubernetes (ноды/узел)
+	Главный узел
+		- API Server = дирижер узлов кластера 
+		- Scheduler = планировщик ресурсов 
+		- Kube Controller Manager = управляет всеми подами 
+		- etcd = отвечает за логи 
+
+	- kubelet = отвечает за коммуникацию узлов 
+	- kube-prox = отвечает за сетевые ресурсы 
+	- Container Runtime = управление контейнерами
+
+kubectl = утилита для управления кластером 
+minikube start --force = запуск кластера  (принудительный) 
+minikube status = проверить состояние 
+kubectl cluster-info = проверяем состояние кластера через утилиту 
+kubectl get pod - вывод всех подов 
+k get pods -o wide - вывод всех подов + ip
+kubectl get nodes - вывод информации о ноде 
+k get namespaces - вывести все пространства имён 
+k get pods --namespace=kube-system - вывести список подов запущенных из определённой группы имён 
+minikube ssh - подключение к ноде 
+k run my-nginx-pod --image=nginx - создание пода с nginx
+k describe pod my-nginx-pod - вывести информацию о поде 
+k delete pod my-nginx-pod - удаление пода 
+kubectl get nodes -A -owide -  проверить состояние кластера 
+
+
+
+k create deployment my-nginx-deploy --image=nginx = создание диплоя (внутри данного пространства можно создавать поды, все поды унаследуют image от диплоя, с помощью диплоя можно изменять содержимое подов)
+k describe deploy my-nginx-deploy - вывод инфы о диплое 
+k get deploy - вывести все диплои 
+k scale deploy my-nginx-deploy --replicas=3 - увеличить число подов в диплое 
+
+k expose deploy my-nginx-deploy --port=8080 --target-port=80 - создание сервиса для определённого диплоя (доступ только внутри ноды)
+k expose deploy my-nginx-deploy --type=NodePort --port=8080 --target-port=80 - сервер с возможностью выхода в интернет 
+k delete services my-nginx-deploy - удалить сервис 
+k get services - получить список сервисов 
+
+обновления 
+kubectl set image deploy k8s-hello k8s-web-hello=bstashchuk/k8s-web-hello:2.0.0 - k8s-hello диплой, k8s-web-hello нынешний контейнер, bstashchuk/k8s-web-hello:2.0.0 нужный контейнер 
+
+
+apiVersion: apps/v1
+kind: Deployment - что создаём 
+metadata:
+  name: k8s-web-hello имя диплоя 
+spec: - характеристики диплоя 
+  replicas: 5 - сколько подов поднять 
+  selector: - используется для поиска нужных подов 
+    matchLabels:
+      app: k8s-web-hello
+  template: - тут расписывается как создать под 
+    metadata:
+      labels:
+        app: k8s-web-hello - метка для пода 
+    spec:
+      containers:
+      - name: k8s-web-hello
+        image: bstashchuk/k8s-web-hello 
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 3000
+        
+
+
+kubectl apply -f deploymant.yaml - запуск 

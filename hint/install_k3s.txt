@@ -1,0 +1,86 @@
+install k3s
+
+curl -sLS https://get.k3sup.dev | sh
+sudo install k3sup /usr/local/bin/
+
+k3sup install \
+  --ip 192.168.0.138 \
+  --user root \
+  --tls-san 192.168.0.55 \
+  --cluster \
+  --k3s-extra-args "--disable servicelb --node-ip=192.168.0.138 " \
+  --merge \
+  --sudo \
+  --ssh-key /root/.ssh/id_ed25519 \
+  --context k3s-ha
+
+копируем конфиг из cat /etc/rancher/k3s/k3s.yaml в .kube в main servere 
+
+
+Подключаемся к ноде 192.168.0.176
+устанавливаем kubevip - kubectl apply -f https://kube-vip.io/manifests/rbac.yaml
+ctr image pull docker.io/plndr/kube-vip:latest
+alias kube-vip="ctr run --rm --net-host docker.io/plndr/kube-vip:latest vip /kube-vip"
+запускаем kube-vip - kube-vip manifest daemonset --interface eth0 --address 192.168.0.55 --inCluster --taint --controlplane --arp --leaderElection | tee /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
+
+
+мастер
+k3sup join --ip 192.168.0.221 --server-ip 192.168.0.55  --server  --k3s-channel latest --user root  --ssh-key /root/.ssh/id_ed25519
+k3sup join --ip 192.168.0.105 --server-ip 192.168.0.55  --server  --k3s-channel latest --user root  --ssh-key /root/.ssh/id_ed25519
+работяга
+k3sup join --ip 192.168.0.217 --server-ip 192.168.0.55 --k3s-channel latest --user root --ssh-key /root/.ssh/id_ed25519
+k3sup join --ip 192.168.0.110 --server-ip 192.168.0.55 --k3s-channel latest --user root --ssh-key /root/.ssh/id_ed25519
+k3sup join --ip 192.168.0.106 --server-ip 192.168.0.55 --k3s-channel latest --user root --ssh-key /root/.ssh/id_ed25519
+
+
+k3sup join --ip 192.168.0.207 --server-ip 192.168.0.55 --k3s-channel latest --k3s-extra-args "--node-label \"longhorn=true\"" --user root --ssh-key /root/.ssh/id_ed25519
+kubectl apply -f https://raw.githubusercontent.com/JamesTurland/JimsGarage/main/Kubernetes/Longhorn/longhorn.yaml
+kubectl get pods \
+--namespace longhorn-system \
+--watch
+
+
+metallb
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+(kubectl delete validatingwebhookconfigurations metallb-webhook-configuration)
+
+kubectl get ds -n metallb-system
+
+--------
+
+pool-ip.yml
+
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: pool-ip
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.0.170-192.168.0.200
+
+kubectl -n metallb-system apply -f pool-ip.yml
+
+--------
+
+l2-advertisement.yml
+
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: k3s-lb-pool
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - pool-ip
+
+kubectl apply -f l2-advertisement.yml
+
+
+kubectl -n metallb-system get IPAddressPool - список адресов 
+kubectl get l2advertisement -A - провайдер адресов 
+
+
+Удаление 
+мастера - /usr/local/bin/k3s-uninstall.sh
+работяги - /usr/local/bin/k3s-agent-uninstall.sh
